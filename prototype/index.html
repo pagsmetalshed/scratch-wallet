@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch Wallet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #212121;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            color: #2E7D32;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #2E7D32, #388E3C);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+        }
+
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .balance-amount {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .balance-usd {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: #2E7D32;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #1B5E20;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #424242;
+        }
+
+        .btn-secondary:hover {
+            background: #616161;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2E7D32;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #424242;
+            border-radius: 10px;
+            background: #303030;
+            color: white;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2E7D32;
+        }
+
+        .transaction-item {
+            background: #303030;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-type {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .transaction-purpose {
+            color: #2E7D32;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .transaction-date {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .positive {
+            color: #2E7D32;
+        }
+
+        .negative {
+            color: #F44336;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1A1A1A;
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-item.active, .nav-item:hover {
+            color: #2E7D32;
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #303030;
+            border: 2px solid #2E7D32;
+            border-radius: 10px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2E7D32;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .referral-code {
+            background: #2E7D32;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .referral-code-text {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2E7D32;
+            margin-right: 8px;
+        }
+
+        .offline {
+            background: #F44336;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #212121;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 350px;
+            width: 100%;
+            text-align: center;
+            border: 2px solid #2E7D32;
+        }
+
+        .success-icon {
+            color: #2E7D32;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Home Screen -->
+        <div class="screen active" id="home">
+            <div class="header">
+                <div class="logo">🔸 Scratch Wallet</div>
+                <div style="font-size: 14px; color: #999;">
+                    <span class="status-indicator" id="connectionStatus"></span>
+                    <span id="connectionText">Bluetooth Ready</span>
+                </div>
+            </div>
+
+            <div class="balance-card">
+                <div class="balance-label">Your Balance</div>
+                <div class="balance-amount" id="balance">250.00</div>
+                <div class="balance-label" style="margin-top: 5px;">SCRATCH</div>
+                <div class="balance-usd">≈ $125.00 USD</div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn" onclick="showScreen('send')">
+                    📤 Send
+                </button>
+                <button class="btn" onclick="showScreen('receive')">
+                    📥 Receive
+                </button>
+                <button class="btn btn-secondary" onclick="showScreen('history')">
+                    📊 History
+                </button>
+                <button class="btn btn-secondary" onclick="showScreen('btc')">
+                    ₿ BTC Savings
+                </button>
+            </div>
+        </div>
+
+        <!-- Send Screen -->
+        <div class="screen" id="send">
+            <div class="header">
+                <div class="logo">Send Scratch</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Amount (SCRATCH)</label>
+                <input type="number" class="form-input" id="sendAmount" placeholder="Enter amount" step="0.01">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Purpose (Private Note) 🔒</label>
+                <input type="text" class="form-input" id="sendPurpose" placeholder="e.g., bananas, labour" maxlength="50">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Recipient</label>
+                <input type="text" class="form-input" id="recipient" placeholder="Scan QR or enter address">
+            </div>
+
+            <button class="btn" style="width: 100%; margin-bottom: 15px;" onclick="simulateBluetooth()">
+                📡 Find Nearby Devices
+            </button>
+
+            <button class="btn" style="width: 100%;" onclick="sendPayment()">
+                Send Payment
+            </button>
+        </div>
+
+        <!-- Receive Screen -->
+        <div class="screen" id="receive">
+            <div class="header">
+                <div class="logo">Receive Scratch</div>
+            </div>
+
+            <div class="qr-placeholder">
+                QR Code<br>
+                (Your Wallet Address)<br><br>
+                <small>SCR1x4k9m...</small>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 14px; color: #999; margin-bottom: 10px;">Your Scratch Address:</div>
+                <div style="background: #303030; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; word-break: break-all;">
+                    SCR1x4k9mP7qR8sT2uV5wX6yZ3aB4cD7eF9gH1iJ
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" style="width: 100%;" onclick="copyAddress()">
+                📋 Copy Address
+            </button>
+        </div>
+
+        <!-- History Screen -->
+        <div class="screen" id="history">
+            <div class="header">
+                <div class="logo">Transaction History</div>
+            </div>
+
+            <div id="transactionList">
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-type">Received</div>
+                        <div class="transaction-purpose">Purpose: bananas</div>
+                        <div class="transaction-date">Today, 2:30 PM</div>
+                    </div>
+                    <div class="transaction-amount positive">+25.00</div>
+                </div>
+
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-type">Sent</div>
+                        <div class="transaction-purpose">Purpose: labour</div>
+                        <div class="transaction-date">Today, 11:15 AM</div>
+                    </div>
+                    <div class="transaction-amount negative">-50.00</div>
+                </div>
+
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-type">Referral Bonus</div>
+                        <div class="transaction-purpose">Friend joined Scratch!</div>
+                        <div class="transaction-date">Yesterday, 4:45 PM</div>
+                    </div>
+                    <div class="transaction-amount positive">+50.00</div>
+                </div>
+
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-type">Signup Bonus</div>
+                        <div class="transaction-purpose">Welcome to Scratch!</div>
+                        <div class="transaction-date">Sep 1, 2025</div>
+                    </div>
+                    <div class="transaction-amount positive">+100.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BTC Savings Screen -->
+        <div class="screen" id="btc">
+            <div class="header">
+                <div class="logo">₿ BTC Savings</div>
+            </div>
+
+            <div class="balance-card" style="background: linear-gradient(135deg, #FF9800, #F57C00);">
+                <div class="balance-label">Bitcoin Balance</div>
+                <div class="balance-amount">0.0025</div>
+                <div class="balance-label" style="margin-top: 5px;">BTC</div>
+                <div class="balance-usd">≈ $112.50 USD</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Buy Bitcoin with Scratch</label>
+                <input type="number" class="form-input" placeholder="Enter SCRATCH amount" step="0.01">
+            </div>
+
+            <button class="btn" style="width: 100%; background: #FF9800;">
+                💰 Buy Bitcoin
+            </button>
+
+            <div style="margin-top: 20px; padding: 15px; background: #303030; border-radius: 10px; font-size: 14px;">
+                <strong>Note:</strong> Bitcoin purchases require internet connection. Your BTC is stored securely in a separate savings pot.
+            </div>
+        </div>
+
+        <!-- Referral Screen -->
+        <div class="screen" id="referral">
+            <div class="header">
+                <div class="logo">Invite Friends</div>
+                <div style="font-size: 14px; color: #2E7D32; margin-top: 5px;">
+                    Earn 50 SCRATCH per referral
+                </div>
+            </div>
+
+            <div class="referral-code">
+                <div class="referral-code-text" id="referralCode">SCRATCH2025</div>
+                <div style="font-size: 14px; opacity: 0.9;">Your Referral Code</div>
+            </div>
+
+            <button class="btn" style="width: 100%; margin-bottom: 15px;" onclick="shareReferral()">
+                📱 Share Code
+            </button>
+
+            <div class="form-group">
+                <label class="form-label">Enter Friend's Referral Code</label>
+                <input type="text" class="form-input" id="friendReferralCode" placeholder="Enter code">
+            </div>
+
+            <button class="btn btn-secondary" style="width: 100%;" onclick="useReferralCode()">
+                ✨ Use Referral Code
+            </button>
+
+            <div style="margin-top: 20px; padding: 15px; background: #303030; border-radius: 10px; font-size: 12px; color: #999;">
+                <strong>💡 Referral Info:</strong><br>
+                • You and your friend both get 50 SCRATCH<br>
+                • Rewards halve every 4 years<br>
+                • Next halving: 2029<br>
+                • Max 10 referrals per account
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-item active" onclick="showScreen('home')">
+            🏠<br>Home
+        </button>
+        <button class="nav-item" onclick="showScreen('send')">
+            📤<br>Send
+        </button>
+        <button class="nav-item" onclick="showScreen('receive')">
+            📥<br>Receive
+        </button>
+        <button class="nav-item" onclick="showScreen('history')">
+            📊<br>History
+        </button>
+        <button class="nav-item" onclick="showScreen('referral')">
+            👥<br>Referral
+        </button>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="success-icon">✅</div>
+            <h3 style="color: #2E7D32; margin-bottom: 15px;">Payment Sent!</h3>
+            <p style="margin-bottom: 20px;" id="successMessage">Your payment has been broadcast via Bluetooth mesh network.</p>
+            <button class="btn" onclick="closeModal()" style="width: 100%;">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Simple state management
+        let currentBalance = 250.00;
+        let transactions = [
+            {
+                type: 'Received',
+                purpose: 'bananas',
+                amount: 25.00,
+                date: 'Today, 2:30 PM'
+            },
+            {
+                type: 'Sent', 
+                purpose: 'labour',
+                amount: -50.00,
+                date: 'Today, 11:15 AM'
+            },
+            {
+                type: 'Referral Bonus',
+                purpose: 'Friend joined Scratch!',
+                amount: 50.00,
+                date: 'Yesterday, 4:45 PM'
+            },
+            {
+                type: 'Signup Bonus',
+                purpose: 'Welcome to Scratch!',
+                amount: 100.00,
+                date: 'Sep 1, 2025'
+            }
+        ];
+
+        // Screen navigation
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Remove active class from nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected screen
+            document.getElementById(screenId).classList.add('active');
+            
+            // Highlight active nav item
+            event.target.classList.add('active');
+        }
+
+        // Simulate Bluetooth device discovery
+        function simulateBluetooth() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '🔍 Scanning...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerHTML = '📱 Found: User's Phone (5m away)';
+                document.getElementById('recipient').value = 'User's Phone - SCR2y7n8q...';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            }, 2000);
+        }
+
+        // Send payment
+        function sendPayment() {
+            const amount = document.getElementById('sendAmount').value;
+            const purpose = document.getElementById('sendPurpose').value || 'No purpose specified';
+            const recipient = document.getElementById('recipient').value;
+
+            if (!amount || !recipient) {
+                alert('Please enter amount and recipient');
+                return;
+            }
+
+            if (parseFloat(amount) > currentBalance) {
+                alert('Insufficient balance');
+                return;
+            }
+
+            // Update balance
+            currentBalance -= parseFloat(amount);
+            document.getElementById('balance').textContent = currentBalance.toFixed(2);
+
+            // Add to transaction history
+            const newTransaction = {
+                type: 'Sent',
+                purpose: purpose,
+                amount: -parseFloat(amount),
+                date: 'Just now'
+            };
+            
+            transactions.unshift(newTransaction);
+            updateTransactionHistory();
+
+            // Show success modal
+            document.getElementById('successMessage').textContent = 
+                `Successfully sent ${amount} SCRATCH for "${purpose}" via Bluetooth mesh network.`;
+            document.getElementById('successModal').classList.add('active');
+
+            // Clear form
+            document.getElementById('sendAmount').value = '';
+            document.getElementById('sendPurpose').value = '';
+            document.getElementById('recipient').value = '';
+        }
+
+        // Update transaction history display
+        function updateTransactionHistory() {
+            const container = document.getElementById('transactionList');
+            container.innerHTML = '';
+
+            transactions.forEach(tx => {
+                const item = document.createElement('div');
+                item.className = 'transaction-item';
+                
+                const amountClass = tx.amount > 0 ? 'positive' : 'negative';
+                const amountPrefix = tx.amount > 0 ? '+' : '';
+                
+                item.innerHTML = `
+                    <div class="transaction-info">
+                        <div class="transaction-type">${tx.type}</div>
+                        <div class="transaction-purpose">Purpose: ${tx.purpose}</div>
+                        <div class="transaction-date">${tx.date}</div>
+                    </div>
+                    <div class="transaction-amount ${amountClass}">${amountPrefix}${Math.abs(tx.amount).toFixed(2)}</div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        // Copy wallet address
+        function copyAddress() {
+            const address = 'SCR1x4k9mP7qR8sT2uV5wX6yZ3aB4cD7eF9gH1iJ';
+            navigator.clipboard.writeText(address).then(() => {
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+
+        // Share referral code
+        function shareReferral() {
+            const code = document.getElementById('referralCode').textContent;
+            const message = `Join Scratch Wallet and get 50 free SCRATCH! Use my referral code: ${code}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Join Scratch Wallet',
+                    text: message
+                });
+            } else {
+                navigator.clipboard.writeText(message).then(() => {
+                    alert('Referral message copied to clipboard!');
+                });
+            }
+        }
+
+        // Use referral code
+        function useReferralCode() {
+            const code = document.getElementById('friendReferralCode').value;
+            if (!code) {
+                alert('Please enter a referral code');
+                return;
+            }
+
+            // Simulate referral validation
+            currentBalance += 50;
+            document.getElementById('balance').textContent = currentBalance.toFixed(2);
+
+            const newTransaction = {
+                type: 'Referral Bonus',
+                purpose: `Used code: ${code}`,
+                amount: 50.00,
+                date: 'Just now'
+            };
+            
+            transactions.unshift(newTransaction);
+            updateTransactionHistory();
+
+            alert('Success! You received 50 SCRATCH for using a referral code!');
+            document.getElementById('friendReferralCode').value = '';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('successModal').classList.remove('active');
+        }
+
+        // Simulate connection status
+        function updateConnectionStatus() {
+            const statusDot = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('connectionText');
+            
+            // Randomly simulate online/offline for demo
+            const isOnline = Math.random() > 0.3;
+            
+            if (isOnline) {
+                statusDot.classList.remove('offline');
+                statusText.textContent = 'Bluetooth Ready';
+            } else {
+                statusDot.classList.add('offline');
+                statusText.textContent = 'Connecting...';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTransactionHistory();
+            setInterval(updateConnectionStatus, 5000);
+        });
+    </script>
+</body>
+</html>
