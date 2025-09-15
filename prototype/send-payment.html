@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Payment - Scratch Wallet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #212121;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 10px;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 30px;
+            background: none;
+            border: none;
+            color: #2E7D32;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .logo {
+            color: #2E7D32;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .balance-indicator {
+            background: linear-gradient(135deg, #2E7D32, #388E3C);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            color: #2E7D32;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .form-label .icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 18px;
+            border: 2px solid #424242;
+            border-radius: 12px;
+            background: #303030;
+            color: white;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2E7D32;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+
+        .form-input.large {
+            font-size: 24px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .currency-label {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #2E7D32;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .privacy-note {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .privacy-note .lock-icon {
+            color: #2E7D32;
+            margin-right: 5px;
+        }
+
+        .recipient-section {
+            background: #303030;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .scan-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: #2E7D32;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #1B5E20;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #424242;
+        }
+
+        .btn-secondary:hover {
+            background: #616161;
+        }
+
+        .nearby-devices {
+            margin-top: 15px;
+        }
+
+        .device-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: #424242;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .device-item:hover {
+            background: #525252;
+        }
+
+        .device-item.selected {
+            background: #2E7D32;
+            border: 2px solid #4CAF50;
+        }
+
+        .device-info {
+            flex: 1;
+        }
+
+        .device-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .device-distance {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .device-signal {
+            font-size: 18px;
+        }
+
+        .transaction-summary {
+            background: #1A1A1A;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid #2E7D32;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 15px;
+            border-top: 1px solid #424242;
+            font-weight: bold;
+        }
+
+        .summary-label {
+            color: #999;
+        }
+
+        .summary-value {
+            font-weight: 600;
+        }
+
+        .send-button {
+            width: 100%;
+            background: linear-gradient(135deg, #2E7D32, #4CAF50);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+        }
+
+        .send-button:disabled {
+            background: #424242;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.active {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #303030;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .online {
+            background: #4CAF50;
+        }
+
+        .scanning {
+            background: #FF9800;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .error-message {
+            background: #F44336;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message {
+            background: #4CAF50;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .quick-amounts {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .quick-amount {
+            background: #424242;
+            border: 2px solid transparent;
+            color: white;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-amount:hover, .quick-amount.selected {
+            background: #2E7D32;
+            border-color: #4CAF50;
+        }
+
+        .mesh-status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1A1A1A;
+            border-radius: 8px;
+            border-left: 4px solid #2E7D32;
+        }
+
+        .mesh-status h4 {
+            color: #2E7D32;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .mesh-status p {
+            font-size: 12px;
+            color: #999;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <div class="logo">Send Payment</div>
+            <div class="subtitle">Send SCRATCH to nearby devices</div>
+        </div>
+
+        <div class="balance-indicator">
+            Available Balance: <strong>250.00 SCRATCH</strong> (≈ $125.00)
+        </div>
+
+        <div class="status-indicator" id="bluetoothStatus">
+            <div class="status-dot online" id="statusDot"></div>
+            <span id="statusText">Bluetooth mesh ready</span>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <!-- Amount Section -->
+        <div class="form-section">
+            <label class="form-label">
+                <span class="icon">💰</span>
+                Amount to Send
+            </label>
+            <div class="quick-amounts">
+                <button class="quick-amount" onclick="setQuickAmount(5)">5</button>
+                <button class="quick-amount" onclick="setQuickAmount(10)">10</button>
+                <button class="quick-amount" onclick="setQuickAmount(25)">25</button>
+                <button class="quick-amount" onclick="setQuickAmount(50)">50</button>
+            </div>
+            <div class="input-container">
+                <input type="number" class="form-input large" id="amount" placeholder="0.00" 
+                       step="0.01" min="0.01" max="250" oninput="updateSummary()">
+                <span class="currency-label">SCRATCH</span>
+            </div>
+        </div>
+
+        <!-- Purpose Section -->
+        <div class="form-section">
+            <label class="form-label">
+                <span class="icon">🏷️</span>
+                Purpose (Private Note)
+            </label>
+            <input type="text" class="form-input" id="purpose" placeholder="e.g., bananas, labour, rent" 
+                   maxlength="50" oninput="updateSummary()">
+            <div class="privacy-note">
+                <span class="lock-icon">🔒</span>
+                Only you and recipient can see this note
+            </div>
+        </div>
+
+        <!-- Recipient Section -->
+        <div class="form-section">
+            <label class="form-label">
+                <span class="icon">📱</span>
+                Recipient
+            </label>
+            <div class="recipient-section">
+                <div class="scan-buttons">
+                    <button class="btn" onclick="scanForDevices()">
+                        <span class="loading" id="scanLoader">⟳</span>
+                        📡 Find Nearby
+                    </button>
+                    <button class="btn btn-secondary" onclick="scanQR()">
+                        📷 Scan QR Code
+                    </button>
+                </div>
+                
+                <input type="text" class="form-input" id="manualAddress" 
+                       placeholder="Or enter wallet address manually">
+
+                <div class="nearby-devices" id="nearbyDevices" style="display: none;">
+                    <h4 style="color: #2E7D32; margin-bottom: 10px; font-size: 14px;">
+                        📡 Nearby Scratch Wallets
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Summary -->
+        <div class="transaction-summary" id="summary" style="display: none;">
+            <h3 style="color: #2E7D32; margin-bottom: 15px; font-size: 16px;">📋 Transaction Summary</h3>
+            <div class="summary-row">
+                <span class="summary-label">Amount:</span>
+                <span class="summary-value" id="summaryAmount">-</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Purpose:</span>
+                <span class="summary-value" id="summaryPurpose">-</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Recipient:</span>
+                <span class="summary-value" id="summaryRecipient">-</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Network Fee:</span>
+                <span class="summary-value">FREE</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Total:</span>
+                <span class="summary-value" id="summaryTotal">-</span>
+            </div>
+        </div>
+
+        <button class="send-button" id="sendButton" onclick="sendPayment()" disabled>
+            <span class="loading" id="sendLoader">⟳</span>
+            🚀 Send Payment
+        </button>
+
+        <div class="mesh-status">
+            <h4>🌐 Mesh Network Status</h4>
+            <p>Connected to 3 nearby devices. Your payment will be relayed through the mesh network and added to the blockchain when devices sync online.</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedDevice = null;
+        let isScanning = false;
+
+        // Sample nearby devices data
+        const nearbyDevices = [
+            { id: 'dev1', name: "Sarah's Phone", distance: '2m away', signal: '📶', address: 'SCR2x9k1mP...' },
+            { id: 'dev2', name: "Coffee Shop Terminal", distance: '15m away', signal: '📶', address: 'SCR3a8j2nQ...' },
+            { id: 'dev3', name: "Mike's Wallet", distance: '8m away', signal: '📵', address: 'SCR4b7i3oR...' }
+        ];
+
+        function goBack() {
+            // In a real app, this would navigate back
+            alert('Back button pressed - would return to main screen');
+        }
+
+        function setQuickAmount(amount) {
+            // Remove previous selection
+            document.querySelectorAll('.quick-amount').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Select current button
+            event.target.classList.add('selected');
+            
+            // Set amount
+            document.getElementById('amount').value = amount;
+            updateSummary();
+        }
+
+        function scanForDevices() {
+            if (isScanning) return;
+            
+            isScanning = true;
+            const loader = document.getElementById('scanLoader');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            // Update UI to scanning state
+            loader.classList.add('active');
+            statusDot.classList.remove('online');
+            statusDot.classList.add('scanning');
+            statusText.textContent = 'Scanning for nearby devices...';
+            
+            // Simulate scanning
+            setTimeout(() => {
+                displayNearbyDevices();
+                loader.classList.remove('active');
+                statusDot.classList.remove('scanning');
+                statusDot.classList.add('online');
+                statusText.textContent = 'Found 3 nearby devices';
+                isScanning = false;
+            }, 3000);
+        }
+
+        function displayNearbyDevices() {
+            const container = document.getElementById('nearbyDevices');
+            container.style.display = 'block';
+            
+            // Clear existing devices
+            const existingDevices = container.querySelectorAll('.device-item');
+            existingDevices.forEach(device => device.remove());
+            
+            // Add device items
+            nearbyDevices.forEach(device => {
+                const deviceElement = document.createElement('div');
+                deviceElement.className = 'device-item';
+                deviceElement.onclick = () => selectDevice(device, deviceElement);
+                
+                deviceElement.innerHTML = `
+                    <div class="device-info">
+                        <div class="device-name">${device.name}</div>
+                        <div class="device-distance">${device.distance} • ${device.address}</div>
+                    </div>
+                    <div class="device-signal">${device.signal}</div>
+                `;
+                
+                container.appendChild(deviceElement);
+            });
+        }
+
+        function selectDevice(device, element) {
+            // Remove previous selection
+            document.querySelectorAll('.device-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Select current device
+            element.classList.add('selected');
+            selectedDevice = device;
+            
+            // Update manual address field
+            document.getElementById('manualAddress').value = `${device.name} (${device.address})`;
+            
+            updateSummary();
+            showSuccess(`Selected ${device.name} for payment`);
+        }
+
+        function scanQR() {
+            // Simulate QR scanning
+            showSuccess('QR Scanner opened - would access camera in real app');
+            
+            // Simulate successful scan after 2 seconds
+            setTimeout(() => {
+                document.getElementById('manualAddress').value = 'Scanned: John\'s Wallet (SCR5c6h4pS...)';
+                selectedDevice = { name: "John's Wallet", address: 'SCR5c6h4pS...' };
+                updateSummary();
+            }, 2000);
+        }
+
+        function updateSummary() {
+            const amount = document.getElementById('amount').value;
+            const purpose = document.getElementById('purpose').value || 'No purpose specified';
+            const recipient = selectedDevice ? selectedDevice.name : 
+                            document.getElementById('manualAddress').value || 'Not selected';
+            
+            if (amount && recipient !== 'Not selected') {
+                document.getElementById('summary').style.display = 'block';
+                document.getElementById('summaryAmount').textContent = `${amount} SCRATCH`;
+                document.getElementById('summaryPurpose').textContent = purpose;
+                document.getElementById('summaryRecipient').textContent = recipient;
+                document.getElementById('summaryTotal').textContent = `${amount} SCRATCH`;
+                
+                // Enable send button
+                document.getElementById('sendButton').disabled = false;
+            } else {
+                document.getElementById('summary').style.display = 'none';
+                document.getElementById('sendButton').disabled = true;
+            }
+        }
+
+        function sendPayment() {
+            const amount = document.getElementById('amount').value;
+            const purpose = document.getElementById('purpose').value || 'No purpose specified';
+            const recipient = selectedDevice ? selectedDevice.name : 'Selected recipient';
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                showError('Please enter a valid amount');
+                return;
+            }
+            
+            if (parseFloat(amount) > 250) {
+                showError('Insufficient balance');
+                return;
+            }
+            
+            if (!selectedDevice && !document.getElementById('manualAddress').value) {
+                showError('Please select a recipient');
+                return;
+            }
+            
+            // Start sending animation
+            const button = document.getElementById('sendButton');
+            const loader = document.getElementById('sendLoader');
+            
+            button.disabled = true;
+            button.style.background = '#424242';
+            button.innerHTML = '<span class="loading active">⟳</span> Sending via Bluetooth...';
+            
+            // Simulate payment process
+            setTimeout(() => {
+                showSuccess(`Payment sent! ${amount} SCRATCH sent to ${recipient} for "${purpose}"`);
+                
+                // Reset form after successful send
+                setTimeout(() => {
+                    resetForm();
+                }, 2000);
+            }, 3000);
+        }
+
+        function resetForm() {
+            document.getElementById('amount').value = '';
+            document.getElementById('purpose').value = '';
+            document.getElementById('manualAddress').value = '';
+            document.getElementById('summary').style.display = 'none';
+            document.getElementById('nearbyDevices').style.display = 'none';
+            selectedDevice = null;
+            
+            // Reset send button
+            const button = document.getElementById('sendButton');
+            button.disabled = true;
+            button.style.background = '';
+            button.innerHTML = '🚀 Send Payment';
+            
+            // Remove quick amount selections
+            document.querySelectorAll('.quick-amount').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auto-focus on amount input
+            document.getElementById('amount').focus();
+        });
+    </script>
+</body>
+</html>
