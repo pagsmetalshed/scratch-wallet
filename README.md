@@ -104,7 +104,7 @@ npm run dev
 
 ## 🔗 Links
 
-- **Live Prototype**: [View Demo](your-demo-link)
+- **Live Prototype**: [View Demo](./prototype/index.html)
 - **Technical SDD**: [Full Specification](./docs/sdd.md)
 - **Adalo Progress**: [Mobile App Preview](your-adalo-link)
 - **Discussion**: [Community Forum](your-forum-link)
